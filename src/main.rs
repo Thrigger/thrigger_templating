@@ -1,8 +1,12 @@
+mod config;
+mod token;
+
+use token::{Token, TokenType};
+
 use std::fs;
 
 use clap::Parser;
 
-mod config;
 
 fn main() {
     let args = config::Arg::parse();
@@ -10,39 +14,47 @@ fn main() {
     let contents = fs::read_to_string(args.template).unwrap();
     println!("Content of template:\n{contents:?}");
 
-    let parsed = parse(&contents);
+    let tokens: Vec<Token> = scan(&contents);
 
     println!("This is the result:\n");
     println!("-------------");
-    for (cmd, arg) in parsed {
-        match cmd {
-            "print" => print!("{arg}"),
-            "println" => println!("{arg}"),
-            _ => (),
-        };
+    for token in tokens {
+        println!("{:?}", token.to_string());
     }
     println!("-----END-----");
 
 }
 
-fn parse(cont: &str) -> Vec<(&str, &str)> {
+fn scan(cont: &str) -> Vec<Token> {
     let mut i = 0;
-    let mut ret = vec![];
-    loop {
-        // TODO shall look for first special character
-        if let Some(stop_i) = cont[i..].find("(") {
-            let cmd = &cont[i..stop_i];
-            i = stop_i + 1;
-            if let Some(stop_i) = cont[i..].find(")") {
-                let args = &cont[i..stop_i];
-                ret.push((cmd, args));
-                i = stop_i + 1;
-            } else {
-                panic!("Error parsing could not find ending paranteses");
-            }
+    let mut tokens = vec![];
+
+    while i < cont.len() {
+        if let Some(tok) = get_one_char_token(cont, i) {
+            tokens.push(tok);
+            i += 1;
+        } else if let Some((tok, new_i))  = get_keyword_token(cont, i) {
+            tokens.push(tok);
+            i = new_i;
         } else {
-            break
+            i+=1;
         }
     }
-    ret
+    tokens
+}
+
+fn get_one_char_token(s: &str, i: usize) -> Option<Token> {
+    match &s[i..i+1] {
+        "(" => Some(Token::new(TokenType::LeftPara, None)),
+        ")" => Some(Token::new(TokenType::RightPara, None)),
+        _ => None,
+    }
+}
+fn get_keyword_token(s: &str, i: usize) -> Option<(Token, usize)> {
+    if s.len() >= i + 7 && &s[i..i+7] == "println" {
+        return Some((Token::new(TokenType::Println, None), 7));
+    } else if s.len() >= i + 5 && &s[i..i+5] == "print" {
+        return Some((Token::new(TokenType::Print, None), 5));
+    }
+    None
 }
