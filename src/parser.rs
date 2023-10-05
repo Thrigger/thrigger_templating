@@ -55,10 +55,23 @@ mod tests {
     use super::*;
 
     #[test]
+    fn ok_get_one_char_token() {
+        let code = "(x)";
+        let expected = vec![
+            Some(Token::new(TokenType::LeftPara, None)),
+            None,
+            Some(Token::new(TokenType::RightPara, None))];
+
+        for i in 0..code.len() {
+            assert_eq!(get_one_char_token(code, i), expected[i]);
+        }
+    }
+
+    #[test]
     fn ok_get_string_token() {
         let code = String::from("\"abc\"");
 
-        if let Some((Token, i_new)) = get_string_token(&code, 0) {
+        if let Some((token, i_new)) = get_string_token(&code, 0) {
             assert_eq!(4, i_new);
         } else {
             panic!("Does not parse correct!");

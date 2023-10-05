@@ -1,9 +1,10 @@
+#[derive(Debug,PartialEq)]
 pub struct Token {
-    token_type: TokenType,
+    pub token_type: TokenType,
     lexeme: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug,PartialEq)]
 pub enum TokenType {
     /* One character lexeme */
     LeftPara,
