@@ -33,6 +33,35 @@ fn get_string_token(s: &str, i: usize) -> Option<(Token, usize)> {
     None
 }
 
+fn get_int_token(s: &str, i: usize) -> Option<(Token, usize)> {
+    let mut multiplier = 1;
+    let mut offset = i;
+
+    while offset < s.len() && &s[offset..offset+1] == "-" {
+        multiplier *= -1;
+        offset += 1;
+    }
+
+    let mut sum = 0;
+    let mut is_int = false;
+    while offset < s.len() {
+        if let Ok(char_val) = &s[offset..offset+1].parse::<i128>() {
+            is_int = true;
+            sum *= 10;
+            sum += char_val;
+            offset += 1;
+        } else {
+            break;
+        }
+    }
+
+    if is_int {
+        Some((Token::new(TokenType::Numb(sum * multiplier), None), offset))
+    } else {
+        None
+    }
+}
+
 fn get_one_char_token(s: &str, i: usize) -> Option<Token> {
     match &s[i..i+1] {
         "(" => Some(Token::new(TokenType::LeftPara, None)),
@@ -73,6 +102,26 @@ mod tests {
 
         if let Some((token, i_new)) = get_string_token(&code, 0) {
             assert_eq!(4, i_new);
+            assert_eq!("abc", token.token_type.get_string().unwrap());
+        } else {
+            panic!("Does not parse correct!");
+        }
+    }
+
+    #[test]
+    fn ok_get_int_token() {
+        let code = String::from("-123");
+
+        if let Some((token, i_new)) = get_int_token(&code, 0) {
+            assert_eq!(4, i_new);
+            assert_eq!(-123, token.token_type.get_int().unwrap());
+        } else {
+            panic!("Does not parse correct!");
+        }
+
+        if let Some((token, i_new)) = get_int_token(&code[1..], 0) {
+            assert_eq!(3, i_new);
+            assert_eq!(123, token.token_type.get_int().unwrap());
         } else {
             panic!("Does not parse correct!");
         }

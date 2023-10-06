@@ -11,10 +11,26 @@ pub enum TokenType {
     RightPara,
     /* Datatypes */
     Str(String),
-    Numb(i64),
+    Numb(i128),
     /* Keywords */
     Print,
     Println,
+}
+
+impl TokenType {
+    pub fn get_string(&self) -> Option<&str> {
+        match self {
+            TokenType::Str(s) => Some(&s),
+            _ => None,
+        }
+    }
+
+    pub fn get_int(&self) -> Option<i128> {
+        match self {
+            TokenType::Numb(i) => Some(*i),
+            _ => None,
+        }
+    }
 }
 
 impl Token {
