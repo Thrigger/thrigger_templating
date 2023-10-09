@@ -125,6 +125,11 @@ mod tests {
         } else {
             panic!("Does not parse correct!");
         }
+
+        match get_int_token("abc", 0) {
+            None => (),
+            _ => panic!("Does not parse correct!")
+        };
     }
 }
 
