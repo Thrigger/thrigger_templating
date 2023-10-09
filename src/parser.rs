@@ -3,6 +3,7 @@ use crate::token::{Token, TokenType};
 pub fn scan(cont: &str) -> Vec<Token> {
     let mut i = 0;
     let mut tokens = vec![];
+    let mut row = 1;
 
     while i < cont.len() {
         if let Some(tok) = get_one_char_token(cont, i) {
@@ -12,10 +13,16 @@ pub fn scan(cont: &str) -> Vec<Token> {
             tokens.push(tok);
             i = new_i;
         } else if let Some((tok, new_i))  = get_string_token(cont, i) {
+            row += tok.token_type.get_string().unwrap().matches("\n").count();
             tokens.push(tok);
             i = new_i;
-        } else {
+        } else if &cont[i..i+1] == " " {
             i+=1;
+        } else if /*i + 1 < cont.len() &&  */ &cont[i..i+1] == "\n" {
+            row += 1;
+            i+=1;
+        } else {
+            panic!("Unrecognized charcter({:?}, {}) on row: {}", &cont[i..i+1], &cont[i..i+1], row);
         }
     }
     tokens
