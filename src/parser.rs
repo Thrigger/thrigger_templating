@@ -9,23 +9,47 @@ pub fn scan(cont: &str) -> Vec<Token> {
         if let Some(tok) = get_one_char_token(cont, i) {
             tokens.push(tok);
             i += 1;
-        } else if let Some((tok, new_i))  = get_keyword_token(cont, i) {
-            tokens.push(tok);
-            i = new_i;
         } else if let Some((tok, new_i))  = get_string_token(cont, i) {
             row += tok.token_type.get_string().unwrap().matches("\n").count();
             tokens.push(tok);
             i = new_i;
         } else if &cont[i..i+1] == " " {
             i+=1;
-        } else if /*i + 1 < cont.len() &&  */ &cont[i..i+1] == "\n" {
+        } else if &cont[i..i+1] == "\n" {
             row += 1;
             i+=1;
+        } else if cont[i..i+1].chars().next().unwrap().is_alphabetic() {
+            let word = get_parsed_word(&cont[i..]).unwrap();
+            if let Some(t) = Token::new_keyword_token(word) {
+                tokens.push(t);
+            } else {
+                let t = Token::new(TokenType::Identifier(word.to_string()), None);
+                tokens.push(t);
+            }
+            i = word.len();
         } else {
             panic!("Unrecognized charcter({:?}, {}) on row: {}", &cont[i..i+1], &cont[i..i+1], row);
         }
     }
     tokens
+}
+
+fn get_parsed_word(s: &str) -> Option<&str> {
+    let mut off = 0;
+    while off < s.len() {
+        let c = &s[off..off+1].chars().next().unwrap();
+        if c.is_alphanumeric() || c.is_numeric() {
+            off += 1;
+        } else {
+            break;
+        }
+    }
+
+    if off == 0 {
+        return None;
+    }
+
+    Some(&s[..off])
 }
 
 fn get_string_token(s: &str, i: usize) -> Option<(Token, usize)> {
@@ -77,15 +101,6 @@ fn get_one_char_token(s: &str, i: usize) -> Option<Token> {
     }
 }
 
-fn get_keyword_token(s: &str, i: usize) -> Option<(Token, usize)> {
-    if s.len() >= i + 7 && &s[i..i+7] == "println" {
-        return Some((Token::new(TokenType::Println, None), 7));
-    } else if s.len() >= i + 5 && &s[i..i+5] == "print" {
-        return Some((Token::new(TokenType::Print, None), 5));
-    }
-    None
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -100,6 +115,17 @@ mod tests {
 
         for i in 0..code.len() {
             assert_eq!(get_one_char_token(code, i), expected[i]);
+        }
+    }
+
+    #[test]
+    fn test_get_parsed_word() {
+        let code = "-Println123";
+        let expected = vec![
+            None,
+            Some("Println123")];
+        for i in 0..2 {
+            assert_eq!(get_parsed_word(&code[i..]), expected[i]);
         }
     }
 

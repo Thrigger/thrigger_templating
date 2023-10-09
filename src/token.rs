@@ -12,7 +12,8 @@ pub enum TokenType {
     /* Datatypes */
     Str(String),
     Numb(i128),
-    /* Keywords */
+    Identifier(String),
+    /* Keywords */ /* TODO change these to functions and not keywords in later release */
     Print,
     Println,
 }
@@ -40,6 +41,15 @@ impl Token {
             Some(s) => Some(s.to_string()),
         };
         Token { token_type, lexeme }
+    }
+
+    pub fn new_keyword_token(s: &str) -> Option<Token> {
+        let token_type = match s {
+            "Print" => TokenType::Print,
+            "Println" => TokenType::Println,
+            _ => return None,
+        };
+        Some(Token { token_type, lexeme: None })
     }
 }
 
