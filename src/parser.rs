@@ -108,7 +108,7 @@ mod tests {
         let code = String::from("\"abc\"");
 
         if let Some((token, i_new)) = get_string_token(&code, 0) {
-            assert_eq!(4, i_new);
+            assert_eq!(5, i_new);
             assert_eq!("abc", token.token_type.get_string().unwrap());
         } else {
             panic!("Does not parse correct!");
